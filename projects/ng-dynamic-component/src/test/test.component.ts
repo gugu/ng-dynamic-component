@@ -2,10 +2,11 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
-  Input,
-  Output,
   EventEmitter,
+  Input,
   NgModule,
+  OnChanges,
+  Output,
 } from '@angular/core';
 
 @Component({
@@ -30,11 +31,13 @@ export class AnotherInjectedComponent {}
   selector: 'test-bindings',
   template: 'baz',
 })
-export class InjectedBoundComponent {
+export class InjectedBoundComponent implements OnChanges {
   @Input('outerProp')
   innerProp: any;
   @Output('outerEvt')
   innerEvt = new EventEmitter<any>();
+
+  ngOnChanges(): void {}
 }
 
 @NgModule({
