@@ -1,23 +1,35 @@
-import {
-  ComponentFactoryResolver,
-  Inject,
-  Injectable,
-  KeyValueDiffers,
-} from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 
-import { EventArgumentToken } from './event-argument';
-import { IoService } from './io.service';
+import {
+  DynamicComponentInjector,
+  DynamicComponentInjectorToken,
+} from '../component-injector';
+import { IoService, IoServiceOptions, IoServiceProvider } from './io.service';
+
+export interface IoFactoryServiceOptions {
+  injector?: Injector;
+}
 
 @Injectable({ providedIn: 'root' })
 export class IoFactoryService {
-  constructor(
-    private differs: KeyValueDiffers,
-    private cfr: ComponentFactoryResolver,
-    @Inject(EventArgumentToken)
-    private eventArgument: string,
-  ) {}
+  constructor(private injector: Injector) {}
 
-  create() {
-    return new IoService(this.differs, this.cfr, this.eventArgument);
+  create(
+    componentInjector: DynamicComponentInjector,
+    ioOptions?: IoServiceOptions & IoFactoryServiceOptions,
+  ) {
+    const ioInjector = Injector.create({
+      name: 'IoInjector',
+      parent: ioOptions?.injector ?? this.injector,
+      providers: [
+        IoServiceProvider,
+        { provide: DynamicComponentInjectorToken, useValue: componentInjector },
+        ioOptions
+          ? { provide: IoServiceOptions, useValue: ioOptions }
+          : undefined,
+      ],
+    });
+
+    return ioInjector.get(IoService);
   }
 }

@@ -27,18 +27,18 @@ import {
 })
 export class DynamicComponent implements OnChanges, DynamicComponentInjector {
   @Input()
-  ndcDynamicComponent: Type<any>;
+  ndcDynamicComponent: Type<unknown>;
   @Input()
   ndcDynamicInjector: Injector;
   @Input()
   ndcDynamicProviders: StaticProvider[];
   @Input()
-  ndcDynamicContent: any[][];
+  ndcDynamicContent: unknown[][];
 
   @Output()
-  ndcDynamicCreated: EventEmitter<ComponentRef<any>> = new EventEmitter();
+  ndcDynamicCreated: EventEmitter<ComponentRef<unknown>> = new EventEmitter();
 
-  componentRef: ComponentRef<any> | null;
+  componentRef: ComponentRef<unknown> | null;
 
   constructor(
     private vcr: ViewContainerRef,

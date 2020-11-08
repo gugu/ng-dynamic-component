@@ -17,8 +17,12 @@ import {
   ComponentOutletInjectorDirective,
   DynamicComponentInjectorToken,
 } from '../component-injector';
+import { IoEventArgumentToken } from '../io';
+import {
+  IoEventContextProviderToken,
+  IoEventContextToken,
+} from '../io/event-context';
 import { DynamicIoDirective } from './dynamic-io.directive';
-import { EventArgumentToken } from '../io';
 
 const getComponentInjectorFrom = getByPredicate<ComponentInjectorComponent>(
   By.directive(ComponentInjectorComponent),
@@ -467,13 +471,78 @@ describe('Directive: DynamicIo', () => {
 
     it('should bind outputs with custom event ID', () => {
       TestBed.configureTestingModule({
-        providers: [{ provide: EventArgumentToken, useValue: '$e' }],
+        providers: [{ provide: IoEventArgumentToken, useValue: '$e' }],
       });
       init(
         `<component-injector
           [ndcDynamicOutputs]="{ onEvent: { handler: outputSpy, args: ['$e', tplVar] } }"
           ></component-injector>`,
       );
+      fixture.componentInstance['tplVar'] = 'from-template';
+      fixture.detectChanges();
+
+      injectedComp.onEvent.next('data');
+
+      expect(outputSpy).toHaveBeenCalledWith('data', 'from-template');
+    });
+
+    it('should bind outputs with custom global context', () => {
+      const customEventContext = { customEventContext: 'global' };
+
+      TestBed.configureTestingModule({
+        providers: [
+          {
+            provide: IoEventContextToken,
+            useValue: customEventContext,
+          },
+        ],
+      });
+      init(
+        `<component-injector
+          [ndcDynamicOutputs]="{ onEvent: { handler: outputSpy, args: ['$event', tplVar] } }"
+          ></component-injector>`,
+      );
+
+      outputSpy.mockImplementation(function() {
+        // Use non-strict equal due to a bug in Jest
+        // that clones `this` object and destroys original ref
+        expect(this).toEqual(customEventContext);
+      });
+
+      fixture.componentInstance['tplVar'] = 'from-template';
+      fixture.detectChanges();
+
+      injectedComp.onEvent.next('data');
+
+      expect(outputSpy).toHaveBeenCalledWith('data', 'from-template');
+    });
+
+    it('should bind outputs with custom local context', () => {
+      const customEventContext = { customEventContext: 'local' };
+
+      TestBed.configureTestingModule({
+        providers: [
+          {
+            provide: IoEventContextProviderToken,
+            useValue: {
+              provide: IoEventContextToken,
+              useValue: customEventContext,
+            },
+          },
+        ],
+      });
+      init(
+        `<component-injector
+          [ndcDynamicOutputs]="{ onEvent: { handler: outputSpy, args: ['$event', tplVar] } }"
+          ></component-injector>`,
+      );
+
+      outputSpy.mockImplementation(function() {
+        // Use non-strict equal due to a bug in Jest
+        // that clones `this` object and destroys original ref
+        expect(this).toEqual(customEventContext);
+      });
+
       fixture.componentInstance['tplVar'] = 'from-template';
       fixture.detectChanges();
 
