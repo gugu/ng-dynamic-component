@@ -22,7 +22,7 @@ import {
   DynamicComponentInjector,
   DynamicComponentInjectorToken,
 } from '../component-injector';
-import { createChange, createNewChange, isOnChanges } from '../util';
+import { createChange, createNewChange, isOnChanges, noop } from '../util';
 import { IoEventArgumentToken } from './event-argument';
 import {
   IoEventContextProviderToken,
@@ -83,8 +83,8 @@ export class IoService implements OnDestroy {
 
   private inputs: InputsType;
   private outputs: OutputsType;
+  private maybeNotifyInputChanges: (isFirstChange: boolean) => void = noop;
   private outputsChanged: (outputs: OutputsType) => boolean = () => false;
-  private maybeNotifyInputChanges: (isFirstChange: boolean) => void = () => {};
 
   private get compRef() {
     return this.compInjector.componentRef;
@@ -203,7 +203,7 @@ export class IoService implements OnDestroy {
     if (isOnChanges(this.componentInst)) {
       this.maybeNotifyInputChanges = this.notifyOnInputChanges;
     } else {
-      this.maybeNotifyInputChanges = () => {};
+      this.maybeNotifyInputChanges = noop;
     }
   }
 
