@@ -156,7 +156,6 @@ export class DynamicDirectivesDirective implements OnDestroy, DoCheck {
   private updateDirective(dirDef: DynamicDirectiveDef<unknown>) {
     const io = this.dirIo.get(dirDef.type);
     io.update(dirDef.inputs, dirDef.outputs);
-    io.maybeUpdate();
   }
 
   private initDirective(
