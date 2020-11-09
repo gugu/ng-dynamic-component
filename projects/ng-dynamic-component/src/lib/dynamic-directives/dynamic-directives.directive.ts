@@ -22,8 +22,8 @@ import {
   DynamicComponentInjectorToken,
 } from '../component-injector';
 import { InputsType, IoFactoryService, IoService, OutputsType } from '../io';
-import { extractNgParamTypes, getCtorParamTypes, isOnDestroy } from '../util';
-import { WindowRefService } from '../window-ref';
+import { extractNgParamTypes, isOnDestroy } from '../util';
+import { ReflectRefService } from '../window-ref/reflect-ref.service';
 
 export interface DynamicDirectiveDef<T> {
   type: Type<T>;
@@ -91,10 +91,6 @@ export class DynamicDirectivesDirective implements OnDestroy, DoCheck {
     return this.componentRef.injector;
   }
 
-  private get reflect() {
-    return (this.windowRef.nativeWindow as any).Reflect;
-  }
-
   private dirRef = new Map<Type<unknown>, DirectiveRef<unknown>>();
   private dirIo = new Map<Type<unknown>, IoService>();
   private dirsDiffer = this.iterableDiffers
@@ -105,7 +101,7 @@ export class DynamicDirectivesDirective implements OnDestroy, DoCheck {
     private injector: Injector,
     private iterableDiffers: IterableDiffers,
     private ioFactoryService: IoFactoryService,
-    private windowRef: WindowRefService,
+    private reflectRefService: ReflectRefService,
     @Inject(DynamicComponentInjectorToken)
     @Optional()
     private componentInjector?: DynamicComponentInjector,
@@ -258,8 +254,8 @@ export class DynamicDirectivesDirective implements OnDestroy, DoCheck {
     return (
       // First try Angular Compiler's metadata
       extractNgParamTypes(dirType) ??
-      // Then fallback to Typescript Reflect API
-      getCtorParamTypes(dirType, this.reflect) ??
+      // Then fallback to Reflect API
+      this.reflectRefService.getCtorParamTypes(dirType) ??
       // Bailout
       []
     );

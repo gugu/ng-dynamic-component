@@ -10,13 +10,6 @@ export function createChange(val: unknown, prevVal: unknown): SimpleChange {
 
 export function noop(): void {}
 
-export function getCtorParamTypes(
-  ctor: unknown,
-  reflect: { getMetadata: (type: string, obj: unknown) => unknown[] },
-): unknown[] {
-  return reflect.getMetadata('design:paramtypes', ctor);
-}
-
 /**
  * Extract type arguments from Angular Directive/Component
  */
