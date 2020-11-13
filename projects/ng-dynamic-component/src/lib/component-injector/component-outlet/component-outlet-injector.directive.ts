@@ -4,7 +4,7 @@ import { ComponentRef, Directive, Host } from '@angular/core';
 import {
   DynamicComponentInjector,
   DynamicComponentInjectorToken,
-} from './token';
+} from '../token';
 
 @Directive({
   // tslint:disable-next-line: directive-selector

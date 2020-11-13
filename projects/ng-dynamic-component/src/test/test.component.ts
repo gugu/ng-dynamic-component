@@ -9,17 +9,24 @@ import {
   Output,
 } from '@angular/core';
 
+import { InputsType, OutputsType } from '../lib/io';
+
 @Component({
   selector: 'test',
   template: '',
 })
-export class TestComponent {}
+export class TestComponent {
+  inputs: InputsType;
+  outputs: OutputsType;
+}
 
 @Component({
   selector: 'injected',
   template: 'foo',
 })
-export class InjectedComponent {}
+export class InjectedComponent implements OnChanges {
+  ngOnChanges = jest.fn();
+}
 
 @Component({
   selector: 'another-injected',
@@ -37,7 +44,7 @@ export class InjectedBoundComponent implements OnChanges {
   @Output('outerEvt')
   innerEvt = new EventEmitter<any>();
 
-  ngOnChanges(): void {}
+  ngOnChanges = jest.fn();
 }
 
 @NgModule({

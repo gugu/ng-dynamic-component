@@ -20,10 +20,6 @@ describe('Service: Io', () => {
     service = TestBed.inject(IoService);
   });
 
-  it('should be instantiated', () => {
-    expect(service).toBeInstanceOf(IoService);
-  });
-
   describe('provider', () => {
     it('should create new instance in injector', () => {
       const rootInjector = TestBed.inject(Injector);

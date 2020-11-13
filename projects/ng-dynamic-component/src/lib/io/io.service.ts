@@ -313,8 +313,6 @@ export class IoService implements OnDestroy {
   }
 
   private updateOutputsEventContext() {
-    this.outputsEventContext = undefined;
-
     if (this.eventContextProvider) {
       // Resolve custom context from local provider
       const eventContextInjector = Injector.create({
@@ -335,33 +333,43 @@ export class IoService implements OnDestroy {
 
     Object.keys(outputs).forEach(key => {
       const outputExpr = outputs[key];
+      let outputHandler: EventHandler<unknown>;
 
       if (typeof outputExpr === 'function') {
-        processedOutputs[key] = outputExpr;
+        outputHandler = outputExpr;
       } else {
-        processedOutputs[key] =
-          outputExpr && this.processOutputArgs(outputExpr);
+        outputHandler = outputExpr && this.processOutputArgs(outputExpr);
       }
+
+      if (this.outputsEventContext) {
+        outputHandler = outputHandler.bind(this.outputsEventContext);
+      }
+
+      processedOutputs[key] = outputHandler;
     });
 
     return processedOutputs;
   }
 
   private processOutputArgs(output: OutputWithArgs): EventHandler {
-    const args = 'args' in output ? output.args || [] : [this.eventArgument];
-    let handler: AnyFunction = output.handler;
+    const eventArgument = this.eventArgument;
+    const args = 'args' in output ? output.args || [] : [eventArgument];
+    const eventIdx = args.indexOf(eventArgument);
+    const handler = output.handler;
 
-    if (this.outputsEventContext) {
-      handler = handler.bind(this.outputsEventContext);
+    // When there is no event argument - use just arguments
+    if (eventIdx === -1) {
+      return function() {
+        return handler.apply(this, args);
+      };
     }
 
-    // When no arguments specified - ignore arguments
-    if (args.length === 0) {
-      return () => handler();
-    }
+    return function(event) {
+      const argsWithEvent = [...args];
+      argsWithEvent[eventIdx] = event;
 
-    return event =>
-      handler(...args.map(arg => (arg === this.eventArgument ? event : arg)));
+      return handler.apply(this, argsWithEvent);
+    };
   }
 
   private resolveChanges(changes: SimpleChanges): SimpleChanges {
